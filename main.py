@@ -5,13 +5,14 @@ import re
 from slackclient import SlackClient
 
 from kio import Kio
-
+from agent import KioAgent
 class KioManager(object):
     '''The chat stream manager -- gets instantiated on program start. Polls the slack api at
     regular interval (self.readDelay) for new messages, and susses out if they're @Kio or to
     Kio in a DM. If so, manages the message passing to the appropriate (new or existing,
     if ongoing conversation) Kio instance.'''
-    def __init__(self):
+    def __init__(self, agent=None):
+        self.agent = agent
         # some useful constants
         self.readDelay = 1 # 1 second delay between reading from RTM
         self.mentionRegex = "^<@(|[WU].+?)>(.*)"
@@ -83,13 +84,14 @@ class KioManager(object):
             # new up a Kio and store it
             # pass in the slackClient so we don't make new ones unnecessarily
             # undo if this bottlenecks
-            newKio = Kio(channel, op, isDM, self.slackClient)
+            newKio = Kio(channel, op, isDM,agent = self.agent,slackClient= self.slackClient)
             self.kios[channel] = newKio
         # now send the message on
         self.kios[channel].receiveMessage(message)
 
     def getUserDetails(self, userID):
         userPayload = self.slackClient.api_call("users.info", user=userID)
+        print(userPayload)
         name = userPayload["user"]["name"]
         fullName = userPayload["user"]["real_name"]
         firstName = fullName.split(" ")[0]
@@ -104,4 +106,5 @@ class KioManager(object):
         return output
 
 if __name__ == "__main__":
-    km = KioManager()
+    kioAgent = KioAgent(host='localhost', port=9000, localPort=8951, debug=True)
+    km = KioManager(agent=kioAgent)

@@ -9,33 +9,35 @@ class KioAgent(Pythonian):
 
     def __init__(self, **kwargs):
         super(KioAgent, self).__init__(**kwargs)
-        # self.add_ask('test_junk_mail', self.test_junk_mail,
-        #              '(test_junk_mail ?x)', True)
-        # self.add_ask('test_course_term', self.query_course_terms,
-        #              '(courseTerm ?course ?quarter)')
-        self.add_ask('courseTerm', self.courseTerm, '(courseTerm ?course ?term)', True)
+        self.add_achieve("export", self.export)
+        self.add_ask('test_junk_mail', self.test_junk_mail, '(test_junk_mail ?x)', True)
 
-    def courseTerm(self, courses,terms):
-        print(courses)
-        print(terms)
-        return
+    def test_junk_mail(self, data):
+        logger.debug('testing inserting data into Companion with data: ' + str(data))
+        return "Send a million dollars to this address"
 
-    # def test_junk_mail(self, data):
-    #     logger.debug(
-    #         'testing inserting data into Companion with data: ' + str(data))
-    #     return "Send a million dollars to this address"
+    def more_junk_mail(self, data):
+        logger.debug('more junk mail has arrived')
+        self.update_query('(test_junk_mail ?x)', data)
 
-    def checkCourseTerms(self, data):
-        logger.debug('Querying Course Terms')
-        self.update_query('(courseTerm ?data)', data)
+    def export(self):
+        logger.debug('Testing achieve export')
 
-    def query_course_terms(self):
-        logger.debug('Querying Course Terms')
-        # self.receive_ask_one('(courseTerm ?course ?term)', [])
+    def insertInfo(self, data):
+        Pythonian.insert_data(self,'session-reasoner', data)
+
+
+def instantiate():
+    kio = KioAgent(host='localhost',port=9000, localPort=8951, debug=True)
+    return kio
+
+
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
-    a = KioAgent(host='localhost', port=9000, localPort=8951, debug=True)
+    kioAgent = KioAgent(host='localhost', port=9000, localPort=8951, debug=True)
     # a.test_insert_to_Companion('(started TestAgent)')
-    time.sleep(5)
-    a.checkCourseTerms('(WinterQuarterFn (AcademicYearFn NorthwesternUniversity (YearFn 2018)))')
+    # time.sleep(10)
+    # kioAgent.more_junk_mail('Click here for...')
+    # time.sleep(10)
+    # kioAgent.more_junk_mail('You have won!  Just send your SSN to us and we will send you the money')

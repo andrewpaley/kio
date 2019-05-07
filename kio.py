@@ -12,9 +12,10 @@ class Kio(object):
     We can hang whatever ephemeral state we want to here (but if it requires persistence, that goes
     elsewhere). It also handles any surface-level intent parsing/quick replies, message passing down
     to companions, as well as replying out to the Slack API once a reply has been handed back.'''
-    def __init__(self, channel, op, isDM, slackClient=None):
+    def __init__(self, channel, op, isDM,agent=None, slackClient=None):
         # assign the channel and details about the other person if relevant
         # also, a flag for whether this is a DM context
+        self.agent = agent
         self.channel = channel
         self.op = op
         self.isDM = isDM
@@ -27,7 +28,10 @@ class Kio(object):
 
     def receiveMessage(self, message):
         self.messageHistory.append(message)
+        if ("info" in message):
+            self.storeInformation()
         self.respond(message)
+        print(message)
 
     def respond(self, message):
         response = self.generateResponse(message)
@@ -36,6 +40,10 @@ class Kio(object):
             channel=self.channel,
             text=response
         )
+
+    def storeInformation(self):
+        self.agent.insertInfo(self.op)
+
 
     def generateResponse(self, message):
         # TODO: implement the basic check that would get routed right out to response
