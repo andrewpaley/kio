@@ -9,29 +9,21 @@ class KioAgent(Pythonian):
 
     def __init__(self, **kwargs):
         super(KioAgent, self).__init__(**kwargs)
-        self.add_achieve("export", self.export)
-        self.add_ask('test_junk_mail', self.test_junk_mail, '(test_junk_mail ?x)', True)
-
-    def test_junk_mail(self, data):
-        logger.debug('testing inserting data into Companion with data: ' + str(data))
-        return "Send a million dollars to this address"
-
-    def more_junk_mail(self, data):
-        logger.debug('more junk mail has arrived')
-        self.update_query('(test_junk_mail ?x)', data)
-
-    def export(self):
-        logger.debug('Testing achieve export')
+        self.add_achieve("tell_kio", self.tell_kio)
 
     def insertInfo(self, data):
         Pythonian.insert_data(self,'session-reasoner', data)
+    def sendMessage(self, msg, msgId):
+        content = ["interpret", msgId, msg]
+        Pythonian.achieve_on_agent(self,'interaction-manager', content)
 
+# def instantiate():
+#     kio = KioAgent(host='localhost',port=9000, localPort=8951, debug=True)
+#     return kio
 
-def instantiate():
-    kio = KioAgent(host='localhost',port=9000, localPort=8951, debug=True)
-    return kio
-
-
+    def tell_kio(self, response):
+        print(response)
+        return response
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)

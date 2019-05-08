@@ -28,8 +28,9 @@ class Kio(object):
 
     def receiveMessage(self, message):
         self.messageHistory.append(message)
-        if ("info" in message):
-            self.storeInformation()
+        # if ("info" in message):
+        #     self.storeInformation()
+        self.sendMessageToCompanions(message)
         self.respond(message)
         print(message)
 
@@ -40,9 +41,11 @@ class Kio(object):
             channel=self.channel,
             text=response
         )
+    def sendMessageToCompanions(self, message):
+        self.agent.sendMessage(message)
 
-    def storeInformation(self):
-        self.agent.insertInfo(self.op)
+    # def storeInformation(self):
+        # self.agent.
 
 
     def generateResponse(self, message):

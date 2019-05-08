@@ -53,7 +53,7 @@ class Pythonian(KQMLModule):
 
     def add_ask(self, name, fn, pattern, subscribable=False):
         self.asks[name] = fn
-        self.advertise(pattern)
+        #self.advertise(pattern)
         if subscribable:
             self.subscribers[pattern] = list()
             self.advertise_subscribe(pattern)
@@ -110,7 +110,6 @@ class Pythonian(KQMLModule):
 
     # Override
     def receive_achieve(self, msg, content):
-
         if content.head() == 'task':
             action = content.get('action')
             if action:
@@ -162,7 +161,6 @@ class Pythonian(KQMLModule):
             self.error_reply(msg, 'unexpected performative: ' + str(msg))
 
     def advertise(self, pattern):
-        print(pattern)
         self.connect(self.host, self.port)
         msg = KQMLPerformative('advertise')
         msg.set('sender', self.name)
@@ -199,8 +197,7 @@ class Pythonian(KQMLModule):
         self.send(msg)
         self.close_socket()
 
-    def respond_to_query(self, msg, content, results, resp_type):
-        print("\n\tResults",results)
+    def responsd_to_query(self, msg, content, results, resp_type):
         if resp_type == None or resp_type == ':pattern':
             self.respond_with_pattern(msg, content, results)
         else:
@@ -297,7 +294,7 @@ class Pythonian(KQMLModule):
                         logger.debug("Sending subscption update for " + str(query))
                         # TODO, check for bindings or pattern, refactor to check in one place
                         resp_type = ask.get('response')
-                        self.respond_to_query(msg, query, new_data, resp_type)    
+                        self.responsd_to_query(msg, query, new_data, resp_type)    
                         #self.respond_with_bindings(msg, query, new_data)
                         self.subcribe_data_old[query] = new_data
             for query,_ in self.subcribe_data_new.items():
@@ -308,7 +305,8 @@ class Pythonian(KQMLModule):
         if query in self.subcribe_data_old and self.subcribe_data_old[query] != args:
             logger.debug("Updating " + str(query) + " with " + str(args))
             self.subcribe_data_new[query] = args
- 
+
+
     def insert_data(self, receiver, data, wm_only = False):
         msg = KQMLPerformative('insert')
         msg.set('sender', self.name)
@@ -324,7 +322,6 @@ class Pythonian(KQMLModule):
             msg.set('sender', self.name)
             msg.set('receiver', receiver)
             msg.set('content', listify(data))
-            print(msg)
             self.connect(self.host, self.port)
             self.send(msg)
 
@@ -384,9 +381,7 @@ def listify(possible_list):
 def convert_to_boolean(to_be_bool):
     """
     Since KQML is based on lisp, and (at least for now) messages are coming from lisp land (i.e., Companion), we use some lisp conventions to determine how a KQML element should be converted to a Boolean.  
-
     If the KQML element is <code>nil</code> or <code>()</code> then <code>convert_to_boolean</code> will return <code>False</code>.  Otherwise, it returns <code>True</code>.
-
     """
     if isinstance(to_be_bool, KQMLToken) and to_be_bool.data == "nil":
         return False
@@ -397,7 +392,6 @@ def convert_to_boolean(to_be_bool):
 def convert_to_int(to_be_int):
     """
     Most data being received by Pythonian will be a KQMLToken.  This function gets the data of the KQMLToken and casts it to an int.
-
     """
     if isinstance(to_be_int, KQMLToken):
         return int(to_be_int.data)
@@ -416,7 +410,7 @@ def convert_to_list(to_be_list):
 
 def test(foo):
     print(foo)
-    return foo
+    return 1
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
