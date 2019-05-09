@@ -13,6 +13,7 @@ class KioAgent(Pythonian):
 
     def insertInfo(self, data):
         Pythonian.insert_data(self,'session-reasoner', data)
+        
     def sendMessage(self, msg, msgId):
         content = ["interpret", msgId, msg]
         Pythonian.achieve_on_agent(self,'interaction-manager', content)

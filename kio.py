@@ -12,40 +12,31 @@ class Kio(object):
     We can hang whatever ephemeral state we want to here (but if it requires persistence, that goes
     elsewhere). It also handles any surface-level intent parsing/quick replies, message passing down
     to companions, as well as replying out to the Slack API once a reply has been handed back.'''
-    def __init__(self, channel, op, isDM,agent=None, slackClient=None):
-        # assign the channel and details about the other person if relevant
-        # also, a flag for whether this is a DM context
-        self.agent = agent
-        self.channel = channel
-        self.op = op
-        self.isDM = isDM
-        # make some space for a message history...if this is useful?
+    def __init__(self, conversation, agent, slackClient=None):
+        self.conversation = conversation
         # TODO: how do we want to handle this? Also, should we store both ways or just inbound?
-        self.messageHistory = []
+        self.messageHistory = []        
+        self.agent = agent
         # grab or create a slack client to send message back
         slackToken = os.environ.get('SLACK_BOT_TOKEN')
-        self.slackClient = slackClient if slackClient else SlackClient(slackToken)
+        self.slackClient = slackClient if slackClient is not None else SlackClient(slackToken)
 
     def receiveMessage(self, message):
-        self.messageHistory.append(message)
-        # if ("info" in message):
-        #     self.storeInformation()
-        self.sendMessageToCompanions(message)
-        self.respond(message)
-        print(message)
+        self.messageHistory.append(message.text)
+        self.sendMessageToCompanions(message.text)
+        self.respond(message.text)
+        print(message.text)
 
     def respond(self, message):
         response = self.generateResponse(message)
+        print("responding {0} in {1}".format(response, self.conversation.id))
         self.slackClient.api_call(
             "chat.postMessage",
-            channel=self.channel,
+            channel=self.conversation.id,
             text=response
         )
     def sendMessageToCompanions(self, message):
-        self.agent.sendMessage(message)
-
-    # def storeInformation(self):
-        # self.agent.
+        self.agent.sendMessage(message, 10)
 
 
     def generateResponse(self, message):
@@ -61,10 +52,7 @@ class Kio(object):
             response = "Sorry, you're kinda on your own at the moment!"
 
         if message.startswith("thank"):
-            if self.op:
-                response = self.op["firstName"] + ", you're very welcome!"
-            else:
-            	response = "You're very welcome!"
+            response = "You're very welcome!"
 
         if not response:
             quote = QUOTES[randint(0,QUOTE_COUNT-1)]
