@@ -9,14 +9,15 @@ class KioAgent(Pythonian):
 
     def __init__(self, **kwargs):
         super(KioAgent, self).__init__(**kwargs)
-        self.add_achieve("tell_kio", self.tell_kio)
+        self.add_achieve("tell-user", self.tell_kio)
+    
 
     def insertInfo(self, data):
-        Pythonian.insert_data(self,'session-reasoner', data)
+        self.insert_data('session-reasoner', data)
         
     def sendMessage(self, msg, msgId):
         content = ["interpret", msgId, msg]
-        Pythonian.achieve_on_agent(self,'interaction-manager', content)
+        self.achieve_on_agent('interaction-manager', content)
 
 # def instantiate():
 #     kio = KioAgent(host='localhost',port=9000, localPort=8951, debug=True)
