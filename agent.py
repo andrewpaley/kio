@@ -15,8 +15,8 @@ class KioAgent(Pythonian):
     def insertInfo(self, data):
         self.insert_data('session-reasoner', data)
         
-    def sendMessage(self, msg, msgId):
-        content = ["interpret", msgId, msg]
+    def sendMessage(self, msg, msgId, user):
+        content = ["interpret", msgId, msg, user]
         self.achieve_on_agent('interaction-manager', content)
 
 # def instantiate():
@@ -29,7 +29,7 @@ class KioAgent(Pythonian):
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
-    kioAgent = KioAgent(host='localhost', port=9000, localPort=8951, debug=True)
+    kioAgent = KioAgent(host='localhost', port=9000, localPort=8950, debug=True)
     # a.test_insert_to_Companion('(started TestAgent)')
     # time.sleep(10)
     # kioAgent.more_junk_mail('Click here for...')

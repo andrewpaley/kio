@@ -89,24 +89,24 @@ class KioManager(object):
             print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
             if type(conversation) == IM:
                 print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
-                self.sendToKio(message)
+                self.sendToKio(message, user_id)
             elif type(conversation) == PrivateChannel:
                 # TODO: get this value dynamically, it's the user id of KIO
                 if "<@UJ5HZANNR>" not in message.text: # make sure we're being addressed
                     return False
                 else:
                     print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
-                    self.sendToKio(message)
+                    self.sendToKio(message, user_id)
             elif type(conversation) == PublicChannel:
                 if "<@UJ5HZANNR>" not in message.text: # make sure we're being addressed
                     return False
                 else:
                     print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
-                    self.sendToKio(message)
+                    self.sendToKio(message, user_id)
                 
             return True
 
-    def sendToKio(self, message):
+    def sendToKio(self, message, user):
         # is there already a Kio for this convo? if no, make one
         if message.conversation.id not in self.kios:
             # new up a Kio and store it
@@ -117,7 +117,7 @@ class KioManager(object):
                          slackClient = self.slackClient)
             self.kios[message.conversation.id] = newKio
         # now send the message on
-        self.kios[message.conversation.id].receiveMessage(message)
+        self.kios[message.conversation.id].receiveMessage(message, user)
 
     def getUserDetails(self, userID):
         userPayload = self.slackClient.api_call("users.info", user=userID)

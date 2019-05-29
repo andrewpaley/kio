@@ -20,12 +20,12 @@ class Kio(object):
         # grab or create a slack client to send message back
         slackToken = os.environ.get('SLACK_BOT_TOKEN')
         self.slackClient = slackClient if slackClient is not None else SlackClient(slackToken)
+        self.utteranceid = 1
 
-    def receiveMessage(self, message):
+    def receiveMessage(self, message, user):
         self.messageHistory.append(message.text)
-        self.sendMessageToCompanions(message.text)
+        self.sendMessageToCompanions(message.text, user)
         self.respond(message.text)
-        print(message.text)
 
     def respond(self, message):
         response = self.generateResponse(message)
@@ -35,8 +35,9 @@ class Kio(object):
             channel=self.conversation.id,
             text=response
         )
-    def sendMessageToCompanions(self, message):
-        self.agent.sendMessage(message, 10)
+    def sendMessageToCompanions(self, message, user):
+        self.agent.sendMessage(message, self.utteranceid, user)
+        self.utteranceid += 2
 
 
     def generateResponse(self, message):
