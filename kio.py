@@ -103,11 +103,11 @@ class Kio(object):
         if self.responsePending:
             if self.responseCheckerLoop == 1:
                 self.sendMessage("This one's taking me a moment.")
-            elif self.responseCheckerLoop == 4:
+            elif self.responseCheckerLoop == 5:
                 self.sendMessage("Hm. Sorry, this might take more than a moment.")
             elif self.responseCheckerLoop > 15:
                 # we should probably bail now, right? it's been 30 seconds
-                self.sendMessage("My apologies, I think something's gone wrong -- I can't answer that for you at the moment.")
+                self.sendMessage("My apologies, I can't answer that for you at the moment.")
                 self.responseComplete()
             self.responseCheckerLoop += 1
         else:
@@ -117,9 +117,8 @@ class Kio(object):
         self.agent.sendMessage(message, self.utteranceid, user)
         self.utteranceid += 2
 
-# thanks to stackoverflow folks for this answer
-# wanted a time.sleep() that would be non-blocking on the rest of the code without going full async
-# found here: https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds-in-python
+# leveraged from here (nonblocking loop w/ sleep):
+# https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds-in-python
 class RepeatedTimer(object):
     def __init__(self, interval, function, *args, **kwargs):
         self._timer     = None
