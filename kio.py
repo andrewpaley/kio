@@ -23,7 +23,7 @@ class Kio(object):
         self.timeOfLastInput = None
         self.responsePending = False
         self.responseCheckerLoop = 0
-        self.responseChecker = RepeatedTimer(1, self.responseStatusCheck, self)
+        self.responseChecker = RepeatedTimer(1, self.responseStatusCheck)
         # grab or create a slack client to send message back
         slackToken = os.environ.get('SLACK_BOT_TOKEN')
         self.slackClient = slackClient if slackClient is not None else SlackClient(slackToken)
@@ -124,7 +124,8 @@ class RepeatedTimer(object):
     def _run(self):
         self.is_running = False
         self.start()
-        self.function(*self.args, **self.kwargs)
+        # self.function(*self.args, **self.kwargs)
+        self.function()
 
     def start(self):
         if not self.is_running:
