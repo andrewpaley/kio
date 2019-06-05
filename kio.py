@@ -49,9 +49,9 @@ class Kio(object):
         self.sendMessageToCompanions(message.text, user)
         # self.respond(message.text)
         # message received -- fire it up
-        self.responsePending()
+        self.responseInitiated()
 
-    def responsePending(self):
+    def responseInitiated(self):
         self.timeOfLastInput = time.time()
         self.responsePending = True
         self.responseCheckerLoop = 0
