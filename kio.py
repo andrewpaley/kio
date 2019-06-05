@@ -20,11 +20,11 @@ class Kio(object):
         # TODO: how do we want to handle this? Also, should we store both ways or just inbound?
         self.messageHistory = []
         self.agent = agent
-        # some flags to see if we're taking a while to respond
+        # some flags to manage response loop
         self.timeOfLastInput = None
         self.responsePending = False
         self.responseCheckerLoop = 0
-        self.responseChecker = RepeatedTimer(2, self.responseStatusCheck, self)
+        self.responseChecker = RepeatedTimer(1, self.responseStatusCheck, self)
         # grab or create a slack client to send message back
         slackToken = os.environ.get('SLACK_BOT_TOKEN')
         self.slackClient = slackClient if slackClient is not None else SlackClient(slackToken)
@@ -32,32 +32,45 @@ class Kio(object):
 
     def receiveMessage(self, message, user):
         # we're blocking on new messages if there's already a message, right?
+        # and that includes messages from this or TEMPORARILY any Kio (so KioAgent doesn't get gummed up)
+        # so we can only currently support one Kio convo at a time ACROSS ALL CONVERSATIONS
         # if so:
         if self.responsePending:
             self.sendMessage("Sorry, I'm still thinking about the last request. One moment.")
             return None
-        # message received -- fire it up
-        self.responseInitiated()
+        if self.agent.responsePending or self.agent.latestResponse:
+            # if the former, KioAgent is waiting on a response from companion
+            # if the latter, KioAgent has a response and someone (another Kio) needs to pick it up
+            # this could be reimplemented as a queue, but likely better to suss out multiple i/o on agent
+            # side rather than manage lists across Kio instances
+            self.sendMessage("Sorry, I'm busy at the moment. Please try again shortly.")
         # now do the message passing
         self.messageHistory.append(message.text)
         self.sendMessageToCompanions(message.text, user)
-        self.respond(message.text)
+        # self.respond(message.text)
+        # message received -- fire it up
+        self.responsePending()
 
-    def responseInitiated(self):
+    def responsePending(self):
         self.timeOfLastInput = time.time()
         self.responsePending = True
         self.responseCheckerLoop = 0
         self.responseChecker.start()
 
     def responseComplete(self):
+        # turn off the flags on the KioAgent
+        if self.agent.latestResponse:
+            self.agent.latestResponse = None
+        if self.agent.responsePending:
+            self.agent.responsePending = False
+        # now reset the flags here
         self.responsePending = False
         self.responseChecker.stop()
         self.responseCheckerLoop = 0
 
     def respond(self, message):
-        response = self.generateResponse(message)
         print("responding {0} in {1}".format(response, self.conversation.id))
-        self.sendMessage(response)
+        self.sendMessage(message)
         self.responseComplete()
 
     def sendMessage(self, message):
@@ -67,47 +80,28 @@ class Kio(object):
             text=message
         )
 
-    def generateResponse(self, message):
-        # TODO: implement the basic check that would get routed right out to response
-        # TODO: implement the bridge to the pythonian/companions jazz here.
-        # likely involves passing message, user id (self.op["id"]), and...?
-        # also involves getting a response and routing to self.respond
-        response = None
-
-        message = message.lower()
-
-        if message.startswith("help"):
-            response = "Sorry, you're kinda on your own at the moment!"
-
-        if message.startswith("thank"):
-            response = "You're very welcome!"
-
-        if not response:
-            quote = QUOTES[randint(0,QUOTE_COUNT-1)]
-            starters = [
-                        "Sorry, under construction. In the meantime, fun fact: ",
-                        "Yup, I'm super unhelpful at this point. But hey, ",
-                        "AFK. Also, ",
-                        "I can't understand you, sorry, but I can tell you that "
-                    ]
-            response = starters[randint(0,len(starters)-1)] + \
-              quote["author"] + " once said \"" + quote["quote"] + "\""
-
-        return response
-
     def responseStatusCheck(self):
-        # this will get called every two seconds once a message is received
-        # currently it just tracks the length of time until a response and provides user a sense that it's working
-        # maybe also could poll companions and actually get the reply?
-        # TODO
+        # this will get called every second once a message is received
+        # it keeps track of if a response is taking a while and will also poll
+        # the kio agent to see if agent.latestResponse exists...if so, it's the reply
+        # there would be better ways to do this if we had message ids coming back from
+        # companions -- 1) register each kio in a dict in KioAgent by convo ID and route
+        # as appropriate as a lookup in tell_kio from KioAgent, or 2) do something like
+        # the below, except it's not a single value, it's a set of "mailboxes" by convo id
         if self.responsePending:
-            if self.responseCheckerLoop == 1:
-                self.sendMessage("This one's taking me a moment.")
-            elif self.responseCheckerLoop == 5:
+            if self.agent.latestResponse:
+                # a response is there...we're done...
+                # this call should 1) send the response and
+                # 2) stop this loop from continuing
+                self.respond(self.agent.latestResponse)
+                return False
+            elif self.responseCheckerLoop == 2:
+                self.sendMessage("Um, one moment...")
+            elif self.responseCheckerLoop == 8:
                 self.sendMessage("Hm. Sorry, this might take more than a moment.")
-            elif self.responseCheckerLoop > 15:
+            elif self.responseCheckerLoop > 30:
                 # we should probably bail now, right? it's been 30 seconds
-                self.sendMessage("My apologies, I can't answer that for you at the moment.")
+                self.sendMessage("My apologies, I guess I can't answer that for you at the moment.")
                 self.responseComplete()
             self.responseCheckerLoop += 1
         else:
