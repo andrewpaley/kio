@@ -1,4 +1,3 @@
-import asyncio
 from threading import Timer
 import os
 from random import randint
