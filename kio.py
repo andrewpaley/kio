@@ -37,7 +37,8 @@ class Kio(object):
         if self.responsePending:
             self.sendMessage("Sorry, I'm still thinking about the last request. One moment.")
             return None
-        if self.agent.responsePending or self.agent.latestResponse:
+        # if self.agent.responsePending or self.agent.latestResponse:
+        if self.agent.responsePending:
             # if the former, KioAgent is waiting on a response from companion
             # if the latter, KioAgent has a response and someone (another Kio) needs to pick it up
             # this could be reimplemented as a queue, but likely better to suss out multiple i/o on agent
@@ -96,15 +97,15 @@ class Kio(object):
                 return False
             elif self.responseCheckerLoop == 2:
                 self.sendMessage("Um, one moment...")
-            elif self.responseCheckerLoop == 8:
+            elif self.responseCheckerLoop > 8:
                 self.sendMessage("Hm. Sorry, this might take more than a moment.")
-            elif self.responseCheckerLoop > 30:
-                # we should probably bail now, right? it's been 30 seconds
-                self.sendMessage("My apologies, I guess I can't answer that for you at the moment.")
-                self.responseComplete()
+            # elif self.responseCheckerLoop > 90:
+            #     # we should probably bail now, right? it's been 30 seconds
+            #     self.sendMessage("My apologies, I guess I can't answer that for you at the moment.")
+            #     self.responseComplete()
             self.responseCheckerLoop += 1
         else:
-            self.responseChecker.stop()
+            self.responseComplete()
 
     def sendMessageToCompanions(self, message, user):
         self.agent.sendMessage(message, self.utteranceid, user)
