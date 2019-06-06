@@ -6,10 +6,6 @@ import time
 
 from slackclient import SlackClient
 
-from quotes import QUOTES
-
-QUOTE_COUNT = len(QUOTES)
-
 class Kio(object):
     '''The Kio class. The KioManager will instantiate one of these for each discrete conversation.
     We can hang whatever ephemeral state we want to here (but if it requires persistence, that goes
