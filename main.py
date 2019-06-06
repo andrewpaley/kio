@@ -9,6 +9,7 @@ from kio import Kio
 from agent import KioAgent
 
 
+
 class KioManager(object):
     '''The chat stream manager -- gets instantiated on program start. Polls the slack api at
     regular interval (self.readDelay) for new messages, and susses out if they're @Kio or to
@@ -92,13 +93,13 @@ class KioManager(object):
                 self.sendToKio(message, user_id)
             elif type(conversation) == PrivateChannel:
                 # TODO: get this value dynamically, it's the user id of KIO
-                if "<@UJ5HZANNR>" not in message.text: # make sure we're being addressed
+                if "<@{0}>".format(self.kioID) not in message.text: # make sure we're being addressed
                     return False
                 else:
                     print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
                     self.sendToKio(message, user_id)
             elif type(conversation) == PublicChannel:
-                if "<@UJ5HZANNR>" not in message.text: # make sure we're being addressed
+                if "<@{0}>".format(self.kioID) not in message.text: # make sure we're being addressed
                     return False
                 else:
                     print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
