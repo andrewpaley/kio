@@ -98,7 +98,7 @@ class Kio(object):
                 return False
             elif self.responseCheckerLoop == 2:
                 self.sendMessage("Um, one moment...")
-            elif self.responseCheckerLoop > 8:
+            elif self.responseCheckerLoop == 8:
                 self.sendMessage("Hm. Sorry, this might take more than a moment.")
             # elif self.responseCheckerLoop > 90:
             #     # we should probably bail now, right? it's been 30 seconds
