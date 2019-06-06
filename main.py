@@ -19,12 +19,12 @@ class KioManager(object):
         self.readDelay = 1 # 1 second delay between reading from RTM
         self.kios = {} # agents for each conversation
         self.slackClient = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-        
+
         # populate known conversations
         self.queryConversations()
         # ...and start message polling
         self.startSlackPolling()
-        
+
     def startSlackPolling(self):
         # start polling the slack api
         if self.slackClient.rtm_connect(with_team_state=False):
@@ -65,13 +65,13 @@ class KioManager(object):
                     user_ids = self.slackClient.api_call("conversations.members", channel=id)
                 else:
                     raise ValueError()
-                    
+
                 break
-        
-        
+
+
         users = [SlackUser(id) for id in user_ids]
         return context(id, users)
-    
+
     def routeNewMessage(self, event, retry=False):
         # parses a new message
         # if relevant, it'll pass it on to self.sendToKio with pertinent details
@@ -82,7 +82,7 @@ class KioManager(object):
             user_id = event["user"]
             message_text = event["text"]
             conversation_id = event["channel"]
-            
+
             user = SlackUser(user_id)
             conversation = self.getConversation(conversation_id)
             message = Message(message_text, user, conversation)
@@ -103,7 +103,7 @@ class KioManager(object):
                 else:
                     print("Got {0} in a {1}".format(message.text, type(conversation).__name__))
                     self.sendToKio(message, user_id)
-                
+
             return True
 
     def sendToKio(self, message, user):
