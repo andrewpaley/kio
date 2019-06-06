@@ -67,7 +67,7 @@ class Pythonian(KQMLModule):
             content = KQMLList(['"socket://'+self.host +':'+str(self.localPort)+'"', 'nil', 'nil', self.localPort])
             perf.set('content', content)
             self.send(perf)
-            
+
 
     # Not sure if this is needed
     def close_socket(self):
@@ -76,7 +76,7 @@ class Pythonian(KQMLModule):
 
     def listen(self):
         logger.debug('listening')
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             while self.ready:
                 conn,addr = self.listenSoc.accept()
                 logger.debug('received connection')
@@ -116,6 +116,10 @@ class Pythonian(KQMLModule):
                 self.handle_achieve_action(msg, content, action)
             else:
                 self.error_reply(msg, 'no action for achieve task provided')
+        elif content.head() == 'tell-user':
+            self.handle_achieve_action(msg, content, content)
+            print(self.handle_achieve_action(msg, content, content))
+            print("tell-user event fired")
         elif content.head() == 'actionSequence':
             self.error_reply(msg, 'unexpected achieve command: actionSequence')
         elif content.head() == 'eval':
@@ -294,11 +298,11 @@ class Pythonian(KQMLModule):
                         logger.debug("Sending subscption update for " + str(query))
                         # TODO, check for bindings or pattern, refactor to check in one place
                         resp_type = ask.get('response')
-                        self.responsd_to_query(msg, query, new_data, resp_type)    
+                        self.responsd_to_query(msg, query, new_data, resp_type)
                         #self.respond_with_bindings(msg, query, new_data)
                         self.subcribe_data_old[query] = new_data
             for query,_ in self.subcribe_data_new.items():
-                self.subcribe_data_new[query] = None        
+                self.subcribe_data_new[query] = None
             time.sleep(self.polling_interval)
 
     def update_query(self, query, *args):
@@ -380,7 +384,7 @@ def listify(possible_list):
 
 def convert_to_boolean(to_be_bool):
     """
-    Since KQML is based on lisp, and (at least for now) messages are coming from lisp land (i.e., Companion), we use some lisp conventions to determine how a KQML element should be converted to a Boolean.  
+    Since KQML is based on lisp, and (at least for now) messages are coming from lisp land (i.e., Companion), we use some lisp conventions to determine how a KQML element should be converted to a Boolean.
     If the KQML element is <code>nil</code> or <code>()</code> then <code>convert_to_boolean</code> will return <code>False</code>.  Otherwise, it returns <code>True</code>.
     """
     if isinstance(to_be_bool, KQMLToken) and to_be_bool.data == "nil":

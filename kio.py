@@ -1,3 +1,4 @@
+
 from threading import Timer
 import os
 from random import randint
@@ -30,7 +31,7 @@ class Kio(object):
         self.utteranceid = 1
 
     def receiveMessage(self, message, user):
-        # we're blocking on new messages if there's already a message, right?
+        # we're blocking on new messages if there's already a message
         # and that includes messages from this or TEMPORARILY any Kio (so KioAgent doesn't get gummed up)
         # so we can only currently support one Kio convo at a time ACROSS ALL CONVERSATIONS
         # if so:
@@ -69,7 +70,7 @@ class Kio(object):
         self.responseCheckerLoop = 0
 
     def respond(self, message):
-        print("responding {0} in {1}".format(response, self.conversation.id))
+        print("responding {0} in {1}".format(message, self.conversation.id))
         self.sendMessage(message)
         self.responseComplete()
 
@@ -125,8 +126,7 @@ class RepeatedTimer(object):
     def _run(self):
         self.is_running = False
         self.start()
-        # self.function(*self.args, **self.kwargs)
-        self.function()
+        self.function(*self.args, **self.kwargs)
 
     def start(self):
         if not self.is_running:
