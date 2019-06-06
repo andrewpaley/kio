@@ -26,4 +26,16 @@ python main.py
 
 While the service runs, it'll regularly poll Slack for new messages, looking for either DMs to the Kio user or references to @kio in the Slack App -- upon receipt of those sorts of messages, it'll feed the input down to Companion, and then return the result.
 
-There are a host of comments scattered throughout the code if further information is required.
+There are a host of comments scattered throughout the code if further information is required, though the key files to note are:
+
+#### main.py (the KioManager class)
+Adapted from docstring: The KioManager Class is the chat stream manager -- it gets instantiated on program start. It polls the slack api at a regular interval (set by self.readDelay) for new messages, and susses out if they're @Kio or to Kio in a DM. If so, it manages the message passing to the appropriate (new or existing, if ongoing conversation) Kio instance (there being one Kio instance for each channel or DM thread).
+
+#### kio.py (the Kio class)
+The KioManager will instantiate one of these Kio classes for each discrete conversation (DM or channel). It manages context, message history, long-running feedback (so the user understands work is still being done), message i/o (to/from the Agent), as well as replying out to the Slack API once a reply has been handed back. In future iterations, this class could provide "quick reply" features and improved multi-conversation handling.
+
+#### agent.py (the KioAgent class)
+This inherits from Pythonian and defines the necessary scaffolding on top of Pythonian such that the message i/o with Kio works.
+
+#### pythonian.py (the Pythonian class)
+Largely untouched from the code we received, however the `receive_achieve` method was updated to include `tell-user`
